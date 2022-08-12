@@ -29,4 +29,7 @@ class SetAbstraction(nn.Module):
 
         features = self.pointnet(features)
 
+        if self.group_all:
+            features = features.squeeze(1)
+
         return xyz, features
