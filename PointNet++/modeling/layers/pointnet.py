@@ -1,5 +1,5 @@
-import torch
 from torch import nn
+from torch.nn import functional as F
 
 
 class PointNet(nn.Module):
@@ -17,12 +17,15 @@ class PointNet(nn.Module):
 
     def forward(self, x):
         """
-        :param x: input point features [B, C, K, N]
-        :return: sampled point features [B, C', K]
+        :param x: input point features [B, K, N, C]
+        :return: sampled point features [B, K, C']
         """
+        x = x.permute(0, 3, 1, 2)
+
         for conv, bn in zip(self.convs, self.bns):
             x = self.relu(bn(conv(x)))
 
-        x = torch.max(x, dim=-1)[0]
+        x = F.max_pool2d(x, kernel_size=(1, x.shape[-1])).squeeze(-1)
+        x = x.permute(0, 2, 1)
 
         return x

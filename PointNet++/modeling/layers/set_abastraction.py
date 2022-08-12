@@ -27,8 +27,6 @@ class SetAbstraction(nn.Module):
         else:
             xyz, features = sampling_and_grouping(xyz, features, self.radius, self.num_query, self.num_sample_per_ball)
 
-        features = features.permute(0, 3, 1, 2)
         features = self.pointnet(features)
-        features = features.permute(0, 2, 1)
 
         return xyz, features
