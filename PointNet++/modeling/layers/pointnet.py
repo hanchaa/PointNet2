@@ -4,6 +4,7 @@ from torch import nn
 
 class PointNet(nn.Module):
     def __init__(self, in_channel, hidden_dims):
+        super().__init__()
         self.convs = nn.ModuleList()
         self.bns = nn.ModuleList()
         self.relu = nn.ReLU()
