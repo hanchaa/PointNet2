@@ -1,6 +1,6 @@
 from torch import nn
 
-from pointnet import PointNet
+from .pointnet import PointNet
 from ...utils.pointnet2_utils import sampling_and_grouping
 
 
