@@ -39,11 +39,11 @@ def _ball_query(xyz, query_xyz, radius, num_sample_per_ball):
 
     dist = torch.sqrt(torch.sum((query_xyz - xyz) ** 2, dim=-1))
 
-    group_idx = xyz.new_tensor(range(N)).repeat((B, K, 1))
+    group_idx = xyz.new_tensor(range(N), dtype=torch.long).repeat((B, K, 1))
     group_idx[dist > radius] = N
-    group_idx = torch.sort(group_idx, dim=-1)[0][:, :, num_sample_per_ball]
+    group_idx = torch.sort(group_idx, dim=-1)[0][:, :, :num_sample_per_ball]
 
-    over_sample = group_idx[:, :, 0].unsuqeeze(-1).repeat((1, 1, N))
+    over_sample = group_idx[:, :, 0].unsqueeze(-1).repeat((1, 1, num_sample_per_ball))
     mask = group_idx == N
     group_idx[mask] = over_sample[mask]
 
@@ -61,12 +61,12 @@ def sampling_and_grouping(xyz, features, radius, num_query, num_sample_per_ball)
     """
     B = xyz.shape[0]
 
-    batch_idx = xyz.new_tensor(range(B)).unsqueeze(-1).repeat((1, num_query))
+    batch_idx = xyz.new_tensor(range(B), dtype=torch.long).unsqueeze(-1).repeat((1, num_query))
     fps_idx = _farthest_point_sampling(xyz, num_query)
     query_xyz = xyz[batch_idx, fps_idx]
 
     batch_idx = batch_idx.unsqueeze(-1).repeat((1, 1, num_sample_per_ball))
-    query_idx = xyz.new_tensor(range(num_query)).view(1, num_query, 1).repeat((B, 1, num_sample_per_ball))
+    query_idx = xyz.new_tensor(range(num_query), dtype=torch.long).view(1, num_query, 1).repeat((B, 1, num_sample_per_ball))
     group_idx = _ball_query(xyz, query_xyz, radius, num_sample_per_ball)
     grouped_xyz = xyz.unsqueeze(1).repeat((1, num_query, 1, 1))[batch_idx, query_idx, group_idx]
 
