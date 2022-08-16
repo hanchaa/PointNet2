@@ -2,7 +2,7 @@ from torch import nn
 
 
 class ClassificationHead(nn.Module):
-    def __init__(self, in_dim, hidden_dims, num_class, dropout_rates):
+    def __init__(self, in_channel, hidden_dims, dropout_rates, num_class):
         super().__init__()
 
         self.linears = nn.ModuleList()
@@ -10,7 +10,7 @@ class ClassificationHead(nn.Module):
         self.relu = nn.ReLU()
         self.dropouts = nn.ModuleList()
 
-        previous_dim = in_dim
+        previous_dim = in_channel
         for dim, rate in zip(hidden_dims, dropout_rates):
             self.linears.append(nn.Linear(previous_dim, dim))
             self.bns.append(nn.BatchNorm1d(dim))
