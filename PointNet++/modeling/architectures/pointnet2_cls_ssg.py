@@ -5,7 +5,7 @@ from ..layers import SetAbstraction, ClassificationHead
 
 
 class Model(nn.Module):
-    def __int__(self, num_class, use_normal=False):
+    def __init__(self, num_class, use_normal=False):
         super().__init__()
         self.use_normal = use_normal
 
@@ -60,3 +60,7 @@ class Model(nn.Module):
         loss = F.cross_entropy(predicted, gt)
 
         return loss
+
+
+def get_model(num_class, use_normal=False):
+    return Model(num_class, use_normal)
