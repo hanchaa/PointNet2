@@ -17,9 +17,9 @@ def normalize_points(points):
 class ModelNetDataset(Dataset):
     def __init__(self, path, args, split="train"):
         self.path = path
-        self.num_points = args["num_points"]
+        self.num_points = args["num_point"]
         self.num_category = args["num_category"]
-        self.use_normals = args["use_normals"]
+        self.use_normals = args["use_normal"]
 
         assert self.num_category == 10 or self.num_category == 40, "The number of categories should be 10 or 40!"
         assert split == "train" or split == "test", "Split should be train or test!"
@@ -35,8 +35,6 @@ class ModelNetDataset(Dataset):
             shape_id = [line.strip() for line in f]
 
         self.data_path = [(shape.split("_")[0], os.path.join(self.path, shape.split("_")[0], f"{shape}.txt")) for shape in shape_id]
-
-        print(f"The number of {split} data is {len(self.data_path)}")
 
     def __len__(self):
         return len(self.data_path)
