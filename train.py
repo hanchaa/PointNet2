@@ -1,4 +1,5 @@
 import os
+import copy
 import importlib
 
 import torch
@@ -90,6 +91,11 @@ def train(model, args, logger, loss_fn):
     if is_mainprocess():
         logger.info(f"Starting training from epoch {start_epoch + 1}")
 
+    best_val_acc = 0
+    best_model = None
+    best_optimizer = None
+    best_lr_scheduler = None
+
     for epoch in range(start_epoch, args.epoch):
         if is_mainprocess():
             logger.info(f"Epoch {epoch + 1} / {args.epoch}")
@@ -114,24 +120,40 @@ def train(model, args, logger, loss_fn):
             train_result = train_result / args.num_gpus
 
             if is_mainprocess() and args.wandb != "":
-                wandb.log({"loss": train_result[0], "train acc": train_result[1], "lr": get_lr(optimizer)})
+                wandb.log({"loss": train_result[0], "train acc": train_result[1] * 100, "lr": get_lr(optimizer)})
 
         scheduler.step()
 
         val_acc = test(model, args, logger)
 
         if is_mainprocess():
-            logger.info(f"Train loss: {train_result[0]:.4f} / Train accuracy: {train_result[1]:.2f}%")
-            logger.info(f"Validation loss: {val_acc:.2f}%")
+            logger.info(f"Train loss: {train_result[0]:.4f} / Train accuracy: {train_result[1] * 100:.2f}%")
+            logger.info(f"Validation accuracy: {val_acc * 100:.2f}%")
+            wandb.log({"val acc": val_acc * 100})
 
-        if is_mainprocess() and (epoch + 1) % args.checkpoint_period == 0:
-            logger.info(f"Saving checkpoint model_{epoch}.pth")
-            torch.save({
-                "epoch": epoch,
-                "model": model.state_dict(),
-                "optimizer": optimizer.state_dict(),
-                "scheduler": scheduler.state_dict()
-            }, os.path.join(args.output_dir, f"model_{epoch}.pth"))
+            if val_acc > best_val_acc:
+                best_val_acc = val_acc
+                best_model = copy.deepcopy(model)
+                best_optimizer = copy.deepcopy(optimizer)
+                best_lr_scheduler = copy.deepcopy(scheduler)
+
+            if (epoch + 1) % args.checkpoint_period == 0:
+                logger.info(f"Saving checkpoint model_{epoch}.pth")
+                torch.save({
+                    "epoch": epoch,
+                    "model": model.state_dict(),
+                    "optimizer": optimizer.state_dict(),
+                    "scheduler": scheduler.state_dict()
+                }, os.path.join(args.output_dir, f"model_{epoch}.pth"))
+
+    if is_mainprocess():
+        logger.info("Saving best model to model_best.pth")
+        torch.save({
+            "epoch": epoch,
+            "model": best_model.state_dict(),
+            "optimizer": best_optimizer.state_dict(),
+            "scheduler": best_lr_scheduler.state_dict()
+        }, os.path.join(args.output_dir, f"model_best.pth"))
 
 
 def main(device, args):
@@ -161,7 +183,7 @@ def main(device, args):
         acc = test(model, args, logger)
 
         if is_mainprocess() and args.wandb != "":
-            wandb.log({"val acc": acc})
+            wandb.log({"val acc": acc * 100})
             logger.info(f"Validation accuracy: {acc:.2f}%")
         return
 
