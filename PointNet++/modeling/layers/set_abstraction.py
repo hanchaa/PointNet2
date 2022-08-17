@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 
 from .pointnet import PointNet
@@ -22,7 +23,7 @@ class SetAbstraction(nn.Module):
         """
         if self.group_all:
             assert features is not None, "features should not be None!"
-            features = features.unsqueeze(1)
+            features = torch.cat([xyz, features], dim=-1).unsqueeze(1)
 
         else:
             xyz, features = sampling_and_grouping(xyz, features, self.radius, self.num_query, self.num_sample_per_ball)
