@@ -3,6 +3,7 @@ This repository is implementation of [PointNet++](https://arxiv.org/abs/1706.024
 
 ### Supporting variants
 - PointNet++ classification with SSG
+- PointNet++ classification with MSG
 
 ### Training
 ```console
