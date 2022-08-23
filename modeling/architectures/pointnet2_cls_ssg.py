@@ -4,7 +4,7 @@ from torch.nn import functional as F
 from ..layers import SetAbstraction, ClassificationHead
 
 
-class Model(nn.Module):
+class _Model(nn.Module):
     def __init__(self, num_class, use_normal=False):
         super().__init__()
         self.use_normal = use_normal
@@ -57,14 +57,9 @@ class Model(nn.Module):
         prob = F.softmax(logits, dim=-1)
         return prob
 
-    def loss(self, predicted, gt):
-        loss = F.cross_entropy(predicted, gt)
-
-        return loss
-
 
 def get_model(num_class, use_normal=False):
-    return Model(num_class, use_normal)
+    return _Model(num_class, use_normal)
 
 
 def get_loss_fn():
