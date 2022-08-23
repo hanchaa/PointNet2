@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 from .pointnet import PointNet
-from ..utils.pointnet2_utils import sampling_and_grouping
+from ..utils import farthest_point_sampling, sampling_and_grouping
 
 
 class SetAbstraction(nn.Module):
@@ -34,3 +34,33 @@ class SetAbstraction(nn.Module):
             features = features.squeeze(1)
 
         return xyz, features
+
+
+class SetAbstractionMSG(nn.Module):
+    def __init__(self, in_channel, hidden_dims_list, radius_list, num_query, num_sample_per_ball_list):
+        super().__init__()
+        self.radius_list = radius_list
+        self.num_query = num_query
+        self.num_sample_per_ball_list = num_sample_per_ball_list
+
+        self.pointnets = nn.ModuleList()
+
+        for dims in hidden_dims_list:
+            self.pointnets.append(PointNet(in_channel, dims))
+
+    def forward(self, xyz, features):
+        """
+        :param xyz: xyz coordinates of points [B, N, 3]
+        :param features: point features [B, N, D]
+        :return: sampled points xyz coordinates and features
+        """
+        fps_idx = farthest_point_sampling(xyz, self.num_query)
+        msg_features = []
+
+        for radius, num_sample_per_ball, pointnet in zip(self.radius_list, self.num_sample_per_ball_list, self.pointnets):
+            sampled_xyz, sampled_features = sampling_and_grouping(xyz, features, radius, self.num_query, num_sample_per_ball, fps_idx)
+            msg_features.append(pointnet(sampled_features))
+
+        features = torch.cat(msg_features, dim=-1)
+
+        return sampled_xyz, features

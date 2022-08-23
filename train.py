@@ -127,9 +127,11 @@ def train(model, args, logger, loss_fn):
         val_acc = test(model, args, logger)
 
         if is_mainprocess():
+            wandb.log({"val acc": val_acc * 100})
+
             logger.info(f"Train loss: {train_result[0]:.4f} / Train accuracy: {train_result[1] * 100:.2f}%")
             logger.info(f"Validation accuracy: {val_acc * 100:.2f}%")
-            wandb.log({"val acc": val_acc * 100})
+            logger.info(f"lr: {get_lr(optimizer)}")
 
             if val_acc > best_val_acc:
                 best_val_acc = val_acc
@@ -176,7 +178,7 @@ def main(device, args):
         logger.info(f"Parameters: {args}")
 
         if args.wandb != "":
-            wandb.init(entity=args.wandb, project="pointnet2", resume=args.resume)
+            wandb.init(entity=args.wandb, project="pointnet2", resume=args.resume, id=args.wandb_run_id)
             wandb.watch(model, log="all")
 
     if args.eval_only:

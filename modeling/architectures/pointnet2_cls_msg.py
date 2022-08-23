@@ -1,7 +1,7 @@
 from torch import nn
 from torch.nn import functional as F
 
-from ..layers import SetAbstraction, ClassificationHead
+from ..layers import SetAbstraction, SetAbstractionMSG, ClassificationHead
 
 
 class _Model(nn.Module):
@@ -10,22 +10,22 @@ class _Model(nn.Module):
         self.use_normal = use_normal
 
         in_channel = 6 if use_normal else 3
-        self.sa1 = SetAbstraction(
+        self.sa1 = SetAbstractionMSG(
             in_channel=in_channel,
-            hidden_dims=[64, 64, 128],
-            radius=0.2,
+            hidden_dims_list=[[32, 32, 64], [64, 64, 128], [64, 96, 128]],
+            radius_list=[0.1, 0.2, 0.4],
             num_query=512,
-            num_sample_per_ball=32
+            num_sample_per_ball_list=[16, 32, 128]
         )
-        self.sa2 = SetAbstraction(
-            in_channel=3 + 128,
-            hidden_dims=[128, 128, 256],
-            radius=0.4,
+        self.sa2 = SetAbstractionMSG(
+            in_channel=3 + 64 + 128 + 128,
+            hidden_dims_list=[[64, 64, 128], [128, 128, 256], [128, 128, 256]],
+            radius_list=[0.2, 0.4, 0.8],
             num_query=128,
-            num_sample_per_ball=64
+            num_sample_per_ball_list=[32, 64, 128]
         )
         self.sa3 = SetAbstraction(
-            in_channel=3 + 256,
+            in_channel=3 + 128 + 256 + 256,
             hidden_dims=[256, 512, 1024],
             radius=None,
             num_query=None,
@@ -42,7 +42,7 @@ class _Model(nn.Module):
 
     def forward(self, x):
         if self.use_normal:
-            xyz, features = x[:, :, 3], x[:, :, 3:]
+            xyz, features = x[:, :, :3], x[:, :, 3:]
         else:
             xyz, features = x, None
 
