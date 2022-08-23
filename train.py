@@ -178,7 +178,7 @@ def main(device, args):
         logger.info(f"Parameters: {args}")
 
         if args.wandb != "":
-            wandb.init(entity=args.wandb, project="pointnet2", resume=args.resume)
+            wandb.init(entity=args.wandb, project="pointnet2", resume=args.resume, id=args.wandb_run_id)
             wandb.watch(model, log="all")
 
     if args.eval_only:
