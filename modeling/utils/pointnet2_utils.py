@@ -1,7 +1,7 @@
 import torch
 
 
-def _farthest_point_sampling(xyz, num_query):
+def farthest_point_sampling(xyz, num_query):
     """
     :param xyz: xyz coordinates of points [B, N, 3]
     :param num_query: the number of points to sample
@@ -50,19 +50,21 @@ def _ball_query(xyz, query_xyz, radius, num_sample_per_ball):
     return group_idx
 
 
-def sampling_and_grouping(xyz, features, radius, num_query, num_sample_per_ball):
+def sampling_and_grouping(xyz, features, radius, num_query, num_sample_per_ball, fps_idx=None):
     """
     :param xyz: xyz coordinates of points [B, N, 3]
     :param features: point features [B, N, D]
     :param radius: radius of ball query
     :param num_query: the number of points to sample using FPS
     :param num_sample_per_ball: the number of  points to sample inside ball
+    :param fps_idx: indices of points of sampled by farthest point sampling
     :return: sampled points xyz coordinates and features
     """
     B = xyz.shape[0]
 
     batch_idx = xyz.new_tensor(range(B), dtype=torch.long).unsqueeze(-1).repeat((1, num_query))
-    fps_idx = _farthest_point_sampling(xyz, num_query)
+    if fps_idx is None:
+        fps_idx = farthest_point_sampling(xyz, num_query)
     query_xyz = xyz[batch_idx, fps_idx]
 
     batch_idx = batch_idx.unsqueeze(-1).repeat((1, 1, num_sample_per_ball))
