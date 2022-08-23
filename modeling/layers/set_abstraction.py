@@ -58,9 +58,9 @@ class SetAbstractionMSG(nn.Module):
         msg_features = []
 
         for radius, num_sample_per_ball, pointnet in zip(self.radius_list, self.num_sample_per_ball_list, self.pointnets):
-            xyz, sampled_features = sampling_and_grouping(xyz, features, radius, self.num_query, num_sample_per_ball, fps_idx)
+            sampled_xyz, sampled_features = sampling_and_grouping(xyz, features, radius, self.num_query, num_sample_per_ball, fps_idx)
             msg_features.append(pointnet(sampled_features))
 
         features = torch.cat(msg_features, dim=-1)
 
-        return xyz, features
+        return sampled_xyz, features
