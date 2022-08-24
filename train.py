@@ -14,12 +14,12 @@ from tqdm import tqdm
 import wandb
 
 from utils import parse_args, get_logger, is_mainprocess, get_lr
-from data_utils import ModelNetDataset
+from data_utils import build_dataset
 
 
 def test(model, args):
     assert args.test_batch_size % args.num_gpus == 0, "Total test batch size must be a multiple of the number of gpus"
-    dataset = ModelNetDataset("datasets/modelnet", args, "test")
+    dataset = build_dataset(args, "test")
     dataloader = DataLoader(
         dataset,
         batch_size=args.test_batch_size // args.num_gpus,
@@ -49,7 +49,7 @@ def test(model, args):
 
 def train(model, args, logger, loss_fn):
     assert args.batch_size % args.num_gpus == 0, "Total batch size must be a multiple of the number of gpus"
-    dataset = ModelNetDataset("datasets/modelnet", args, "train")
+    dataset = build_dataset(args, "train")
     dataloader = DataLoader(
         dataset,
         batch_size=args.batch_size // args.num_gpus,

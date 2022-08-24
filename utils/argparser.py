@@ -5,7 +5,7 @@ def parse_args():
     parser = argparse.ArgumentParser("Training PointNet++")
     parser.add_argument("--num-gpus", type=int, help="the number of gpus for training")
     parser.add_argument("--model", type=str, help="name of model to train")
-    parser.add_argument("--num-category", type=int, default=10, help="the number of classes in ModelNet")
+    parser.add_argument("--dataset", type=str, default="", help="dataset for training and evaluation")
     parser.add_argument("--num-point", type=int, default=1024, help="the number of points to sample per shape")
     parser.add_argument("--use-normal", type=bool, default=False, help="whether to use normal for point features")
     parser.add_argument("--epoch", type=int, default=100, help="the number of epochs in training")

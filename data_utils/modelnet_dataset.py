@@ -8,17 +8,15 @@ from .utils import normalize_points
 
 
 class ModelNetDataset(Dataset):
-    def __init__(self, path, args, split="train"):
+    def __init__(self, path, args, num_category, split="train"):
         self.path = path
         self.num_points = args.num_point
-        self.num_category = args.num_category
         self.use_normal = args.use_normal
 
-        assert self.num_category == 10 or self.num_category == 40, "The number of categories should be 10 or 40!"
         assert split == "train" or split == "test", "Split should be train or test!"
 
-        category_file = os.path.join(self.path, f"modelnet{self.num_category}_shape_names.txt")
-        shape_id_file = os.path.join(self.path, f"modelnet{self.num_category}_{split}.txt")
+        category_file = os.path.join(self.path, f"modelnet{num_category}_shape_names.txt")
+        shape_id_file = os.path.join(self.path, f"modelnet{num_category}_{split}.txt")
 
         with open(category_file) as f:
             self.categories = [line.strip() for line in f]
