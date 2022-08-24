@@ -168,7 +168,7 @@ def main(device, args):
     torch.cuda.set_device(device)
 
     module = importlib.import_module(f"modeling.architectures.{args.model}")
-    model = module.get_model(args.num_category, args.use_normal).cuda()
+    model = module.get_model(args).cuda()
     model = DistributedDataParallel(model, device_ids=[device])
     loss_fn = module.get_loss_fn()
 

@@ -58,8 +58,8 @@ class _Model(nn.Module):
         return prob
 
 
-def get_model(num_class, use_normal=False):
-    return _Model(num_class, use_normal)
+def get_model(args):
+    return _Model(args.num_class, args.use_normal)
 
 
 def get_loss_fn():
