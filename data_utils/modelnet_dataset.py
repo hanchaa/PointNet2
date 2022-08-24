@@ -4,14 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-
-def normalize_points(points):
-    centroid = torch.mean(points, dim=0)
-    points = points - centroid
-    max_dist = torch.max(torch.sqrt(torch.sum(points ** 2, dim=1)))
-    points /= max_dist
-
-    return points
+from .utils import normalize_points
 
 
 class ModelNetDataset(Dataset):
@@ -19,7 +12,7 @@ class ModelNetDataset(Dataset):
         self.path = path
         self.num_points = args.num_point
         self.num_category = args.num_category
-        self.use_normals = args.use_normal
+        self.use_normal = args.use_normal
 
         assert self.num_category == 10 or self.num_category == 40, "The number of categories should be 10 or 40!"
         assert split == "train" or split == "test", "Split should be train or test!"
@@ -50,14 +43,7 @@ class ModelNetDataset(Dataset):
         points = points[random_idx]
 
         points[:, 0:3] = normalize_points(points[:, 0:3])
-        if not self.use_normals:
+        if not self.use_normal:
             points = points[:, 0:3]
 
         return points, label[0]
-
-
-if __name__ == "__main__":
-    dataset = ModelNetDataset("../datasets/modelnet/", {"num_points": 1024, "num_category": 10, "use_normals": False}, split="test")
-    points, label = dataset[0]
-    print(points.shape)
-    print(label)

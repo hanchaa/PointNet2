@@ -14,10 +14,10 @@ from tqdm import tqdm
 import wandb
 
 from utils import parse_args, get_logger, is_mainprocess, get_lr
-from data_utils.modelnet_dataset import ModelNetDataset
+from data_utils import ModelNetDataset
 
 
-def test(model, args, logger):
+def test(model, args):
     assert args.test_batch_size % args.num_gpus == 0, "Total test batch size must be a multiple of the number of gpus"
     dataset = ModelNetDataset("datasets/modelnet", args, "test")
     dataloader = DataLoader(
