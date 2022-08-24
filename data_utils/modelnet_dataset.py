@@ -57,7 +57,7 @@ class ModelNetDataset(Dataset):
 
 
 if __name__ == "__main__":
-    dataset = ModelNetDataset("../datasets/modelnet40_normal_resampled/", {"num_points": 1024, "num_category": 10, "use_normals": False}, split="test")
+    dataset = ModelNetDataset("../datasets/modelnet/", {"num_points": 1024, "num_category": 10, "use_normals": False}, split="test")
     points, label = dataset[0]
     print(points.shape)
     print(label)
