@@ -14,12 +14,11 @@ class ShapeNetDataset(Dataset):
         self.use_normal = args.use_normal
         cat_file = os.path.join(path, "synsetoffset2category.txt")
 
-        category = {}
+        category = []
 
         with open(cat_file, "r") as f:
             for line in f:
-                category, directory = line.strip().split()
-                category[directory] = category
+                category.append(line.strip().split()[1])
 
         self.category_id = dict(zip(category, range(len(category))))
 
@@ -38,11 +37,12 @@ class ShapeNetDataset(Dataset):
         data = torch.from_numpy(np.loadtxt(self.data_path[index]).astype(np.float32))
 
         cls_label = self.category_id[self.data_path[index].split("/")[-2]]
+        cls_label = torch.tensor([cls_label], dtype=torch.int64)[0]
 
         random_idx = torch.multinomial(torch.ones(data.shape[0]), num_samples=self.num_points, replacement=False)
         points = data[random_idx, 0:6] if self.use_normal else data[random_idx, 0:3]
         points[:, 0:3] = normalize_points(points[:, 0:3])
 
-        seg_label = points[random_idx, 6]
+        seg_label = data[random_idx, 6].to(torch.int64)
 
         return points, cls_label, seg_label
